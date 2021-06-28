@@ -10,7 +10,7 @@ const {
   Payload
 } = require('dialogflow-fulfillment');
 const {
-  reserveRoom, reserveRoomEnd, reserveRoomSuccess
+  reserveRoom, reserveRoomEnd, reserveRoomSuccess,appintmentRoomEnd,appintmentRoomSuccess,appointmentRoomEnd
 } = require('../controller/room');
 const {
   getPolution
@@ -28,7 +28,6 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   if (req.method === "POST") {
     let event = req.body.events[0];
-    console.log(event);
     if ((event.type === "message" && event.message.type === "text")) {
       postToDialogflow(req);
     } else if (event.type === "postback") {
@@ -37,6 +36,21 @@ router.post('/', async (req, res) => {
       let resultStartDate = '';
       let checkRoomId = event.postback.data;
       checkRoomId = checkRoomId.split("=");
+      console.log(checkRoomId);
+      if(checkRoomId[0] === 'from'){
+        if(checkRoomId[1] === 'appointment&dateStart'){
+          const {data, params} = event.postback;
+          const dateStart = data.split("=");
+          payLoad = await appintmentRoomSuccess(params.datetime, dateStart[2]);
+        }
+        else{
+          if (checkRoomId[1] === 'select&roomId') {
+            payLoad = await appointmentRoomEnd(event.postback.data);
+          }else{
+            payLoad = await appintmentRoomEnd(event.postback);
+          }
+        }
+      }else{
       if (event.postback.params) {
         let checkStartDate = event.postback.data;
         checkStartDate = checkStartDate.split("=");
@@ -52,6 +66,7 @@ router.post('/', async (req, res) => {
         }
       } else {
         payLoad = await reserveRoom(checkRoomId[2], event.postback.data);
+      }
       }
       await reply(event.replyToken, payLoad);
     } else if (event.message.type === "location") {
@@ -83,7 +98,7 @@ const reply = async (replyToken, message) => {
       })
     });
   } catch (err) {
-    console.log(err);
+    console.log('err');
   }
 };
 const postToDialogflow = async payloadRequest => {
