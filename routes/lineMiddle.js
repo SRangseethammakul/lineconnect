@@ -57,8 +57,6 @@ router.post('/', async (req, res) => {
         if (checkStartDate[3]) {
           let resultEndDate = parseISO(event.postback.params.datetime);
           resultStartDate = parseISO(checkStartDate[3]);
-          resultEndDate = format(resultEndDate, 'PPPP kk:mm');
-          resultStartDate = format(resultStartDate, 'PPPP kk:mm');
           payLoad = await reserveRoomSuccess(checkRoomId[2], resultEndDate, resultStartDate, event.source.userId);
         } else {
           result = parseISO(event.postback.params.datetime);
@@ -88,13 +86,14 @@ router.post('/', async (req, res) => {
 });
 const reply = async (replyToken, message) => {
   try {
+    console.log(Array.isArray(message));
     await axios({
       url: `${LINE_MESSAGING_API}/reply`,
       headers: LINE_HEADER,
       method: "post",
       data: JSON.stringify({
         replyToken: replyToken,
-        messages: [message]
+        messages: Array.isArray(message)? message :[message]
       })
     });
   } catch (err) {
