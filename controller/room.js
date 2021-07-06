@@ -5,9 +5,10 @@ const path = require('path');
 const dataRoom = JSON.parse(fs.readFileSync(data));
 const format = require('date-fns/format');
 const parseISO = require('date-fns/parseISO');
+const formatISO = require('date-fns/formatISO')
 const areIntervalsOverlapping = require('date-fns/areIntervalsOverlapping');
 const Booking = require('../models/booking');
-const { createBooking,checkTimeOverlab } = require('../controller/BookingController');
+const { createBooking,checkTimeOverlab,checkTimeOverlabWithoutRoom } = require('../controller/BookingController');
 async function getResponse() {
   let response = '';
   let res = await dataRoom.filter(item => item.status === true && item.useable === true).map((item) => ({
@@ -191,6 +192,7 @@ async function reserveRoomEnd(roomId, dataMessage, resultDate) {
   let res = await dataRoom.find(element => element.id === parseInt(roomId));
   let resultStartDate = format(resultDate, 'PPPPpp');
   let result = format(resultDate, "yyyy-MM-dd'T'HH:mm");
+
   let payLoad = {
     "type": "flex",
     "altText": "โปรดเลือกวันและเวลา",
@@ -339,7 +341,8 @@ async function reserveRoomEnd(roomId, dataMessage, resultDate) {
   };
   return payLoad;
 }
-async function appintmentRoomEnd(resultDate) {
+async function appintmentRoomEnd(resultDate,startDateISO) {
+  startDateISO = format(startDateISO, "yyyy-MM-dd'T'HH:mm");
   let result = resultDate.params.datetime;
   let payLoad = {
     "type": "flex",
@@ -423,7 +426,7 @@ async function appintmentRoomEnd(resultDate) {
                 },
                 {
                   "type": "text",
-                  "text": `sss`,
+                  "text": startDateISO,
                   "wrap": true,
                   "color": "#666666",
                   "size": "sm",
@@ -472,7 +475,7 @@ async function appintmentRoomEnd(resultDate) {
             "action": {
               "type": "datetimepicker",
               "label": "จองวันและเวลาสิ้นสุด",
-              "data": `${resultDate.data}&dateStart=${result}`,
+              "data": `${resultDate.data}&dateStart=${startDateISO}`,
               "mode": "datetime",
               "initial": result,
               "min": result
@@ -490,7 +493,18 @@ async function appintmentRoomEnd(resultDate) {
   return payLoad;
 }
 async function appintmentRoomSuccess(resultEndDate, resultStartDate) {
-  let res = await dataRoom.filter(item => item.status === true && item.useable === true).map((item) => ({
+  let booking_rooms = await(checkTimeOverlabWithoutRoom(resultStartDate,resultEndDate));
+  array1 = await dataRoom.filter(function(n) {
+    for(var i=0; i < booking_rooms.length; i++){
+      if(n.id == booking_rooms[i].room_id){
+        return false;
+      }
+    }
+    return true;
+  });
+  resultEndDate = format(resultEndDate, "yyyy-MM-dd'T'HH:mm");
+  resultStartDate = format(resultStartDate, "yyyy-MM-dd'T'HH:mm");
+  let res = await array1.filter(item => item.status === true && item.useable === true).map((item) => ({
     imageUrl: item.img,
     action: {
       type: "postback",
@@ -501,7 +515,7 @@ async function appintmentRoomSuccess(resultEndDate, resultStartDate) {
   if (res.length) {
     response = {
       "type": "template",
-      "altText": "template",
+      "altText": "เลือกห้อง",
       "template": {
         "type": "image_carousel",
         "columns": res
@@ -516,21 +530,16 @@ async function appintmentRoomSuccess(resultEndDate, resultStartDate) {
   }
   return response;
 }
-async function appointmentRoomEnd(dataFrom) {
-
+async function appointmentRoomEnd(dataFrom,userId) {
   const [red, ...set] = dataFrom.split('&');
   let res = await dataRoom.find(element => element.id === parseInt(set[0].split('=')[1]));
-  console.log(res);
-  let updated = {
-    "id": res.id,
-    "name": res.name,
-    "status": true,
-    "useable": true,
-    "img": res.img
-  }
-  let targetIndex = dataRoom.indexOf(res);
-  dataRoom.splice(targetIndex, 1, updated);
-  fs.writeFileSync(data, JSON.stringify(dataRoom));
+  let dataCheckin = new Booking({
+    username : userId,
+    room_id : res.id,
+    bookingStart : parseISO(set[2].split('=')[1]),
+    bookingEnd : parseISO(set[1].split('=')[1]),
+  });
+  await(createBooking(dataCheckin));
   let payLoad = {
     "type": "flex",
     "altText": "ข้อมูล",
@@ -616,7 +625,7 @@ async function appointmentRoomEnd(dataFrom) {
                   },
                   {
                     "type": "text",
-                    "text": set [2].split('=')[1],
+                    "text": format(parseISO(set[2].split('=')[1]), 'PPPP kk:mm'),
                     "wrap": true,
                     "size": "sm",
                     "color": "#666666",
@@ -636,7 +645,7 @@ async function appointmentRoomEnd(dataFrom) {
                   },
                   {
                     "type": "text",
-                    "text": set [1].split('=')[1],
+                    "text": format(parseISO(set[1].split('=')[1]), 'PPPP kk:mm'),
                     "wrap": true,
                     "size": "sm",
                     "color": "#666666",
@@ -724,6 +733,7 @@ async function reserveRoomSuccess(roomId, resultEndDate_old, resultStartDate_old
   let resultStartDate = format(resultStartDate_old, 'PPPP kk:mm');
   let res = await dataRoom.find(element => element.id === parseInt(roomId));
   let ckOver = await(checkTimeOverlab(resultStartDate_old,resultEndDate_old,res.id));
+  console.log(ckOver);
   if (ckOver.length > 0) {
     payLoad = [
       {
@@ -738,15 +748,6 @@ async function reserveRoomSuccess(roomId, resultEndDate_old, resultStartDate_old
 
     ;
   }else{
-    let updated = {
-      "id": res.id,
-      "name": res.name,
-      "status": true,
-      "useable": true,
-      "start_date": resultStartDate_old,
-      "end_date": resultEndDate_old,
-      "img": res.img
-    }
     let dataCheckin = new Booking({
       username : userId,
       room_id : res.id,
@@ -754,9 +755,6 @@ async function reserveRoomSuccess(roomId, resultEndDate_old, resultStartDate_old
       bookingEnd : resultEndDate_old,
     });
     await(createBooking(dataCheckin));
-    let targetIndex = dataRoom.indexOf(res);
-    dataRoom.splice(targetIndex, 1, updated);
-    fs.writeFileSync(data, JSON.stringify(dataRoom));
     payLoad = {
       "type": "flex",
       "altText": "ข้อมูลการจอง",

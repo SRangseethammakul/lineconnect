@@ -24,8 +24,34 @@ function checkTimeOverlab(startDate, endDate, roomId){
         });
     });
 }
+function checkTimeOverlabWithoutRoom(startDate, endDate){
+    return new Promise((resolve, reject) => {
+        Booking.checkOverlapWithoutRoom(startDate, endDate, function(err, data){
+            if(err){
+                reject(err);
+            }
+            else{
+                resolve(data);
+            }
+        });
+    });
+}
+function getAllData(){
+    return new Promise((resolve, reject) => {
+        Booking.getAllData(function(err, data){
+            if(err){
+                reject(err);
+            }
+            else{
+                resolve(data);
+            }
+        });
+    });
+}
 
 module.exports = {
     createBooking,
-    checkTimeOverlab
+    checkTimeOverlab,
+    checkTimeOverlabWithoutRoom,
+    getAllData
 }

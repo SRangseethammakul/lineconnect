@@ -36,18 +36,20 @@ router.post('/', async (req, res) => {
       let resultStartDate = '';
       let checkRoomId = event.postback.data;
       checkRoomId = checkRoomId.split("=");
-      console.log(checkRoomId);
       if(checkRoomId[0] === 'from'){
         if(checkRoomId[1] === 'appointment&dateStart'){
           const {data, params} = event.postback;
           const dateStart = data.split("=");
-          payLoad = await appintmentRoomSuccess(params.datetime, dateStart[2]);
+          let startDate = parseISO(dateStart[2]);
+          let endDate = parseISO(params.datetime);
+          payLoad = await appintmentRoomSuccess(endDate, startDate);
         }
         else{
           if (checkRoomId[1] === 'select&roomId') {
-            payLoad = await appointmentRoomEnd(event.postback.data);
+            payLoad = await appointmentRoomEnd(event.postback.data,event.source.userId);
           }else{
-            payLoad = await appintmentRoomEnd(event.postback);
+            let startDate = parseISO(event.postback.params.datetime);
+            payLoad = await appintmentRoomEnd(event.postback, startDate);
           }
         }
       }else{
@@ -86,7 +88,6 @@ router.post('/', async (req, res) => {
 });
 const reply = async (replyToken, message) => {
   try {
-    console.log(Array.isArray(message));
     await axios({
       url: `${LINE_MESSAGING_API}/reply`,
       headers: LINE_HEADER,
