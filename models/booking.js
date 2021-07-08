@@ -13,9 +13,9 @@ const bookingSchema = new Schema({
     username: {
         type: String
     },
-    room_id: {
-        type: Number,
-        require: true
+    room_id: Schema.Types.ObjectId,
+    room_name: {
+        type: String
     },
     bookingStart: Date,
     bookingEnd: Date,
