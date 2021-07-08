@@ -12,18 +12,6 @@ const {
 const {
   getAllData : allRoom
 } = require('../controller/RoomManagement');
-async function getName(element) {
-  try{
-    let getData = await getRoomById(element.room_id);
-    if(!getData){
-      return 'test room';
-    }
-    return getData;
-    
-  }catch(error){
-    return error.message;
-  }
-}
 router.get('/',async function (req, res) {
   try{
     let reps = await getAllData();

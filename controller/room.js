@@ -780,6 +780,7 @@ async function reserveRoomSuccess(roomId, resultEndDate_old, resultStartDate_old
         bookingStart: resultStartDate_old,
         bookingEnd: resultEndDate_old,
       });
+      console.log(dataCheckin);
       await (createBooking(dataCheckin));
       payLoad = {
         "type": "flex",
