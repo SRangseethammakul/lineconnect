@@ -11,8 +11,6 @@ let data = new Booking({
 });
 router.get('/',async function(req, res, next) {
   try{
-    let aa = await(createBooking(data));
-    console.log(aa);
     res.render('index', { title: 'Express' });
   }catch(err){
     console.log(err);

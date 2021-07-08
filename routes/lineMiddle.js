@@ -59,8 +59,6 @@ router.post('/', async (req, res) => {
         if (checkStartDate[3]) {
           let resultEndDate = parseISO(event.postback.params.datetime);
           resultStartDate = parseISO(checkStartDate[3]);
-          console.log(resultEndDate, resultStartDate);
-          console.log(event.postback.params.datetime, checkStartDate[3]);
           payLoad = await reserveRoomSuccess(checkRoomId[2].split('&')[0], resultEndDate, resultStartDate, event.source.userId);
         } else {
           result = parseISO(event.postback.params.datetime);
