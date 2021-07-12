@@ -2,6 +2,7 @@ const data = './models/data.json';
 const fs = require('fs');
 const dataRoom = JSON.parse(fs.readFileSync(data));
 const format = require('date-fns/format');
+const addMinutes = require('date-fns/addMinutes')
 const parseISO = require('date-fns/parseISO');
 const Booking = require('../models/booking');
 const {
@@ -211,8 +212,9 @@ async function reserveRoomEnd(roomId, dataMessage, resultDate) {
   // let res_old = await dataRoom.find(element => element.id === parseInt(roomId));
   let res = await getRoomById(roomId);
   let resultStartDate = format(resultDate, 'PPPPpp');
+  let newResultDate = addMinutes(resultDate, 1);
   let result = format(resultDate, "yyyy-MM-dd'T'HH:mm");
-
+  let newResult = format(newResultDate, "yyyy-MM-dd'T'HH:mm");
   let payLoad = {
     "type": "flex",
     "altText": "โปรดเลือกวันและเวลา",
@@ -346,8 +348,8 @@ async function reserveRoomEnd(roomId, dataMessage, resultDate) {
               "label": "จองวันและเวลาสิ้นสุด",
               "data": `${dataMessage}&dateStart=${result}`,
               "mode": "datetime",
-              "initial": result,
-              "min": result
+              "initial": newResult,
+              "min": newResult
             }
           },
           {
@@ -362,8 +364,9 @@ async function reserveRoomEnd(roomId, dataMessage, resultDate) {
   return payLoad;
 }
 async function appintmentRoomEnd(resultDate, startDateISO) {
+  let newResultDate = addMinutes(startDateISO, 1);
+  let newResult = format(newResultDate, "yyyy-MM-dd'T'HH:mm");
   startDateISO = format(startDateISO, "yyyy-MM-dd'T'HH:mm");
-  let result = resultDate.params.datetime;
   let payLoad = {
     "type": "flex",
     "altText": "โปรดเลือกวันและเวลา",
@@ -497,8 +500,8 @@ async function appintmentRoomEnd(resultDate, startDateISO) {
               "label": "จองวันและเวลาสิ้นสุด",
               "data": `${resultDate.data}&dateStart=${startDateISO}`,
               "mode": "datetime",
-              "initial": result,
-              "min": result
+              "initial": newResult,
+              "min": newResult
             }
           },
           {
