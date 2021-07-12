@@ -761,6 +761,7 @@ async function reserveRoomSuccess(roomId, resultEndDate_old, resultStartDate_old
     // let res = await dataRoom.find(element => element.id === parseInt(roomId));
     let res = await getRoomById(roomId);
     let ckOver = await (checkTimeOverlab(resultStartDate_old, resultEndDate_old, res.id));
+    console.log(ckOver);
     if (ckOver.length > 0) {
       payLoad = [{
         "type": "text",

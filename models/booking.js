@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
-const mongo = require('mongodb');
 require('dotenv').config();
-const dbURL = process.env.DB_URL
+const ObjectId = require('mongoose').Types.ObjectId; 
+const dbURL = process.env.DB_URL;
+
 mongoose.connect(dbURL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -26,7 +27,7 @@ module.exports.createBooking = (newBooking, callBack) => {
 }
 module.exports.checkOverlap = (startDate, endDate, roomId, callBack) => {
     booking.find({ 
-        room_id: roomId,
+        room_id: new ObjectId(roomId),
         $or: [ 
           { bookingStart: { $lt: endDate, $gte: startDate } }, 
           { bookingEnd: { $lte: endDate, $gt: startDate } }
