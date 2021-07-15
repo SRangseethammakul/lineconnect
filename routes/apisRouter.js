@@ -1,10 +1,9 @@
-var express = require('express');
+const express = require('express');
 const fs = require('fs');
-var router = express.Router();
-const formatISO = require('date-fns/formatISO');
+const router = express.Router();
 const datas = './models/data.json';
 const dataRooms = JSON.parse(fs.readFileSync(datas));
-const { createRoom,updateById,getRoomById } = require('../controller/RoomManagement');
+const { createRoom,updateById } = require('../controller/RoomManagement');
 const Room = require('../models/rooms');
 const {
   getAllData

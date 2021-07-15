@@ -1,25 +1,17 @@
 var express = require('express');
 var router = express.Router();
-const formatISO = require('date-fns/formatISO');
-const Booking = require('../models/booking');
-const { createBooking } = require('../controller/BookingController');
-let data = new Booking({
-  username : 'act',
-  room_id : 12,
-  bookingStart : formatISO(new Date()),
-  bookingEnd : formatISO(new Date()),
-});
+const { body } = require('express-validator');
+const passportJWT = require('../middleware/passportJWT');
+const userController = require('../controller/userController');
+
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
-router.get('/new',async function(req, res, next) {
-  try{
-    let aa = await(createBooking(data));
-    console.log(aa);
-    res.send('respond with a resource');
-  }catch(err){
-    console.log(err);
-  }
-});
+router.get('/', userController.index);
+router.post('/login', userController.login);
+router.post('/register', [
+  body('name').not().isEmpty().withMessage('please insert name'),
+  body('username').not().isEmpty().withMessage('please insert username'),
+  body('password').not().isEmpty().withMessage('please insert password').isLength({min:8}).withMessage('password length 8')
+], userController.register);
+router.get('/me', [passportJWT.isLogin], userController.me);
+
 module.exports = router;
