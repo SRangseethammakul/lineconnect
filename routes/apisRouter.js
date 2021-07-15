@@ -4,6 +4,7 @@ const router = express.Router();
 const datas = './models/data.json';
 const dataRooms = JSON.parse(fs.readFileSync(datas));
 const { createRoom,updateById } = require('../controller/RoomManagement');
+const passportJWT = require('./middleware/passportJWT');
 const Room = require('../models/rooms');
 const {
   getAllData
@@ -11,7 +12,7 @@ const {
 const {
   getAllData : allRoom
 } = require('../controller/RoomManagement');
-router.get('/',async function (req, res) {
+router.get('/', [passportJWT.isLogin],async function (req, res) {
   try{
     let reps = await getAllData();
     let data = await reps.map((item) => {
@@ -39,7 +40,7 @@ router.get('/',async function (req, res) {
     });
   }
 });
-router.get('/room',async function (req, res) {
+router.get('/room', [passportJWT.isLogin],async function (req, res) {
   let data = await allRoom();
   return res.status(200).json({
     status: true,

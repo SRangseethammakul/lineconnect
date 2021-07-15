@@ -12,7 +12,6 @@ const apisRouter = require('./routes/apisRouter.js');
 
 //import middleware
 const errorHandler = require('./middleware/errorHandler');
-const passportJWT = require('./middleware/passportJWT');
 const cors = require('cors');
 const app = express();
 
