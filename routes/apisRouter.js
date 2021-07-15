@@ -4,7 +4,7 @@ const router = express.Router();
 const datas = './models/data.json';
 const dataRooms = JSON.parse(fs.readFileSync(datas));
 const { createRoom,updateById } = require('../controller/RoomManagement');
-const passportJWT = require('./middleware/passportJWT');
+const passportJWT = require('../middleware/passportJWT');
 const Room = require('../models/rooms');
 const {
   getAllData
