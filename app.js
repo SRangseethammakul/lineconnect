@@ -30,7 +30,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/apis/linemessage', lineMessageRouter);
 app.use('/apis/linemiddle', lineMiddleRouter);
-app.use('/apis/connect',[passportJWT.isLogin], apisRouter);
+app.use('/apis/connect', apisRouter);
 
 
 app.use(errorHandler);
