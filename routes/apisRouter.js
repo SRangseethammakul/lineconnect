@@ -12,7 +12,7 @@ const {
 const {
   getAllData : allRoom
 } = require('../controller/RoomManagement');
-router.get('/', [passportJWT.isLogin],async function (req, res) {
+router.get('/', async function (req, res) {
   try{
     let reps = await getAllData();
     let data = await reps.map((item) => {
@@ -40,7 +40,7 @@ router.get('/', [passportJWT.isLogin],async function (req, res) {
     });
   }
 });
-router.get('/room', [passportJWT.isLogin],async function (req, res) {
+router.get('/room', async function (req, res) {
   let data = await allRoom();
   return res.status(200).json({
     status: true,
